@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"><title>Nusaiba UI audit harness</title>
+  <style>
+    * { box-sizing: border-box; } body { margin: 0; font: 12px/1.4 system-ui; background: #e3e5df; color: #28382e; }
+    header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; }
+    button { padding: 5px 9px; font: inherit; } #stage { position: relative; overflow: hidden; }
+    iframe { border: 0; display: block; transform-origin: top left; }
+    pre { margin: 0; padding: 8px; white-space: pre-wrap; background: #fafaf6; }
+  </style>
+</head>
+<body>
+  <header><strong>Viewport</strong><button data-width="320">320</button><button data-width="768">768</button><button data-width="1024">1024</button><button data-width="1440">1440</button><button id="short">Layar pendek</button><strong>State</strong><button data-state="office">Kantor</button><button data-state="profile">Profil</button><button data-state="recruit">Rekrut</button><button id="busy">Aktivitas padat</button></header>
+  <div id="stage"><iframe title="Nusaiba under audit" src="../kantor-sim.html?speed=0.001"></iframe></div>
+  <pre id="metrics">Memuat…</pre>
+  <script>
+    const frame = document.querySelector('iframe'), stage = document.getElementById('stage'), metrics = document.getElementById('metrics');
+    let width = 1440, state = 'office', short = false;
+    function layout() {
+      const scale = Math.min(1, innerWidth / width), height = short ? 450 : width < 768 ? 740 : 900;
+      frame.style.width = width + 'px'; frame.style.height = height + 'px'; frame.style.transform = 'scale(' + scale + ')';
+      stage.style.height = (height * scale) + 'px';
+    }
+    function measure() {
+      const doc = frame.contentDocument, win = frame.contentWindow;
+      const rect = selector => { const r = doc.querySelector(selector).getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom }; };
+      const overlap = (a, b) => Math.max(0, Math.min(a.right,b.right)-Math.max(a.x,b.x)) * Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y));
+      const activity = rect('#bottom-ticker'), profile = rect('#agent-detail-card'), roster = rect('#roster-bar');
+      const result = {
+        viewport: [win.innerWidth, win.innerHeight], state, title: doc.title,
+        horizontalOverflow: doc.documentElement.scrollWidth > win.innerWidth,
+        activity, profile: state === 'profile' ? profile : null,
+        profileActivityOverlapPx: state === 'profile' ? overlap(profile, activity) : 0,
+        activityViewportPercent: Math.round(activity.width * activity.height / (win.innerWidth * win.innerHeight) * 100),
+        rosterOverflow: doc.querySelector('#roster-list').scrollWidth > doc.querySelector('#roster-list').clientWidth,
+        unnamedColorRadios: [...doc.querySelectorAll('.swatches input')].filter(el => !el.getAttribute('aria-label') && !el.labels?.[0]?.textContent.trim()).length,
+        dialogRole: doc.querySelector('#spawn-modal').tagName === 'DIALOG' ? 'dialog (native)' : doc.querySelector('#spawn-modal').getAttribute('role'),
+        focus: doc.activeElement.id || doc.activeElement.tagName,
+        profileAndRosterOverlapPx: state === 'profile' ? overlap(profile, roster) : 0,
+        headerClock: rect('.brand'), headerTools: rect('.tools')
+      };
+      metrics.textContent = JSON.stringify(result, null, 2);
+      document.body.dataset.ready = width + '-' + state;
+    }
+    function refresh() {
+      layout();
+      const win = frame.contentWindow;
+      win.closeSpawnModal(); win.closeDetailCard();
+      if (state === 'profile') win.focusAgent('ag-4');
+      else { win.setCameraView('overview'); if (state === 'recruit') win.openSpawnModal(); }
+      requestAnimationFrame(() => requestAnimationFrame(measure));
+    }
+    frame.onload = refresh;
+    document.querySelectorAll('[data-width]').forEach(button => button.onclick = () => { width = +button.dataset.width; refresh(); });
+    document.querySelectorAll('[data-state]').forEach(button => button.onclick = () => { state = button.dataset.state; refresh(); });
+    document.getElementById('short').onclick = () => { short = !short; refresh(); };
+    document.getElementById('busy').onclick = () => {
+      for (let i = 0; i < 12; i++) frame.contentWindow.pushActivityLog('Pak Darto meminta tim memeriksa laporan dan menyiapkan dokumen untuk rapat berikutnya.');
+      requestAnimationFrame(() => requestAnimationFrame(measure));
+    };
+    window.addEventListener('resize', layout); layout();
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pemeriksaan sambungan karakter</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e5e7dd; color: #27352c; font: 13px system-ui, sans-serif; }
+    header { height: 48px; display: flex; align-items: center; gap: 8px; padding: 8px 16px; }
+    button { font: inherit; border: 1px solid #a8b4a4; background: #fafaf7; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+    button[aria-pressed="true"] { background: #2f5d50; color: white; }
+    #gallery { position: relative; height: calc(100vh - 48px); }
+    canvas { width: 100%; height: 100%; display: block; }
+    #labels { position: absolute; inset: 0; pointer-events: none; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #labels span { padding: 8px 16px; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../character-model.js"></script>
+</head>
+<body>
+  <header><strong>Cek sambungan</strong><button data-angle="front" aria-pressed="true">Depan</button><button data-angle="side" aria-pressed="false">Samping</button><button data-angle="back" aria-pressed="false">Belakang</button></header>
+  <div id="gallery"><div id="labels"><span>Rina · kerudung</span><span>Sari · rambut panjang</span><span>Dewi · kerudung</span><span>Anggota baru · kuncir</span></div></div>
+  <script>
+    const host = document.getElementById('gallery');
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    host.prepend(renderer.domElement);
+    const looks = [
+      { g: 'f', hair: 'hijab', hijab: 0xe8b04b, top: 'tunik', topCol: 0xc8553d, skin: 0xd8a47f },
+      { g: 'f', hair: 'panjang', hairCol: 0x2a1b14, top: 'kemeja', topCol: 0xe8b04b, skin: 0xe6b994 },
+      { g: 'f', hair: 'hijab', hijab: 0x9c4f6e, top: 'blazer', topCol: 0x2b2f3a, skin: 0xcf9a72 },
+      { g: 'f', hair: 'kuncir', hairCol: 0x241812, top: 'kemeja', topCol: 0x5d7fa3 }
+    ];
+    const scenes = looks.map(look => {
+      const scene = new THREE.Scene(); scene.background = new THREE.Color(0xe5e7dd);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0xa2a893, 0.7));
+      const key = new THREE.DirectionalLight(0xfff8ee, 0.7); key.position.set(-3, 6, 5); scene.add(key);
+      const model = OfficeCharacters.createCharacter(look);
+      const colors = new Set();
+      model.root.traverse(part => {
+        if (part.material && !colors.has(part.material)) { part.material.color.convertSRGBToLinear(); colors.add(part.material); }
+      });
+      scene.add(model.root); return scene;
+    });
+    const camera = new THREE.PerspectiveCamera(29, 1, 0.05, 10);
+    let angle = 'front';
+    function draw() {
+      const width = host.clientWidth, height = host.clientHeight, w = width / 2, h = height / 2;
+      renderer.setSize(width, height); renderer.setScissorTest(true);
+      camera.aspect = w / h;
+      const positions = { front: [0.12, 1.74, 1.45], side: [1.42, 1.74, 0.32], back: [0.20, 1.74, -1.45] };
+      camera.position.set(...positions[angle]); camera.lookAt(0, 1.69, 0); camera.updateProjectionMatrix();
+      scenes.forEach((scene, i) => {
+        const x = (i % 2) * w, y = (i < 2 ? h : 0);
+        renderer.setViewport(x, y, w, h); renderer.setScissor(x, y, w, h); renderer.render(scene, camera);
+      });
+    }
+    document.querySelectorAll('[data-angle]').forEach(button => button.onclick = () => {
+      angle = button.dataset.angle;
+      document.querySelectorAll('[data-angle]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+      draw();
+    });
+    window.addEventListener('resize', draw); draw();
+  </script>
+</body>
+</html>

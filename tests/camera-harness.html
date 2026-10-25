@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"><title>Camera regression checks</title>
+  <style>body{margin:0;font:12px system-ui}header{height:48px;display:flex;align-items:center;gap:6px;padding:0 8px}button{padding:5px 8px}iframe{display:block;border:0;width:100%;height:calc(100vh - 48px)}#result{margin-left:auto}</style>
+</head>
+<body>
+  <header><button data-view="left" disabled>Kiri</button><button data-view="right" disabled>Kanan</button><button data-view="rear" disabled>Belakang</button><button data-view="pan" disabled>Pan jauh</button><button data-view="home" disabled>Reset</button><span id="result">Memuat…</span></header>
+  <iframe src="../kantor-sim.html?speed=0.001" title="Office camera under test"></iframe>
+  <script>
+    const frame = document.querySelector('iframe');
+    const result = document.getElementById('result');
+    frame.onload = () => { document.querySelectorAll('button').forEach(b => b.disabled = false); result.textContent = 'Siap'; };
+    const probes = {
+      left: 'camera.position.set(-24,3,0);controls.target.set(0,1.4,0);controls.update();',
+      right: 'camera.position.set(24,3,0);controls.target.set(0,1.4,0);controls.update();',
+      rear: 'camera.position.set(0,3,-24);controls.target.set(0,1.4,0);controls.update();',
+      pan: 'camera.position.set(110,20,-120);controls.target.set(100,10,-100);controls.update();',
+      home: "setCameraView('overview');"
+    };
+    document.querySelectorAll('button').forEach(button => button.onclick = () => {
+      const win = frame.contentWindow, view = button.dataset.view;
+      win.eval(probes[view]);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const checks = { left: '!wallLeft.visible', right: '!wallRight.visible', rear: 'typeof rearFacade!=="undefined"&&!rearFacade.visible', pan: 'Math.abs(controls.target.x)<=11.5&&Math.abs(controls.target.z)<=9.5', home: 'Math.abs(camera.position.x)<0.01&&Math.abs(controls.target.z)<0.01' };
+        result.textContent = win.eval(checks[view]) ? 'PASS · ' + view : 'FAIL · ' + view;
+      }));
+    });
+  </script>
+</body>
+</html>
