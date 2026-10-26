@@ -27,6 +27,21 @@ svg { flex-shrink: 0; }
 hr { border: 0; border-top: 1px solid var(--line); width: 100%; margin: 8px 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .paper { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-panel); box-shadow: var(--shadow); }
+/* Only persistent controls reveal the room; reading surfaces remain opaque. */
+.room-picker.paper,.clock.paper,.header-actions.paper,.camera-rail.paper,.worker-dock.paper,.activity-card.paper {
+  background: #fffffff0;
+  border-color: #211a1730;
+  box-shadow: 0 2px 12px #1d171721;
+}
+@supports (backdrop-filter: blur(12px)) {
+  .room-picker.paper,.clock.paper,.header-actions.paper,.camera-rail.paper,.worker-dock.paper,.activity-card.paper {
+    background: #ffffffd9;
+    backdrop-filter: blur(12px) saturate(115%);
+    -webkit-backdrop-filter: blur(12px) saturate(115%);
+  }
+}
+.room-picker,.clock,.header-actions,.worker-dock { border-radius: var(--radius-pill); }
+.activity-card.expanded.paper { background: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: var(--line); }
 .eyebrow { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 32px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--paper); font-size: 12px; font-weight: 500; white-space: nowrap; }
 .button:hover:not(:disabled) { background: var(--bg); }
@@ -70,10 +85,11 @@ hr { border: 0; border-top: 1px solid var(--line); width: 100%; margin: 8px 0; }
 .add-worker { min-height: 32px; padding: 5px 10px; margin-left: 4px; border-radius: var(--radius-chrome-item); }
 .scene-loading { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); border-radius: var(--radius-panel); padding: 12px 16px; color: var(--muted); background: var(--paper); box-shadow: var(--shadow); max-width: 320px; font-size: 12px; text-align: center; }
 .room-empty { position: absolute; left: 50%; top: 62%; transform: translate(-50%,-50%); padding: 12px 16px; display: grid; gap: 4px; font-size: 12px; max-width: 300px; }
-.worker-dock { position: absolute; bottom: var(--edge); right: var(--edge); z-index: 12; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 9px 0 12px; max-width: calc(100% - 32px); }
+.worker-dock { position: absolute; bottom: calc(var(--edge) + env(safe-area-inset-bottom, 0px)); right: var(--edge); z-index: 12; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 9px 0 12px; max-width: calc(100% - 32px); }
 .dock-label { font-size: 12px; color: var(--muted); }
 .dock-avatars { display: flex; align-items: center; gap: 4px; overflow-x: auto; max-width: 240px; min-width: 0; padding: 4px 2px; }
 .dock-avatar { display: flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: calc(var(--radius-panel) - 4px); padding: 4px; width: 36px; height: 36px; flex-shrink: 0; }
+.header-actions .icon-button,.worker-dock .icon-button,.dock-avatar { border-radius: var(--radius-pill); }
 .dock-avatar:hover { background: var(--bg); }
 .dock-avatar.active { background: var(--accent-light); }
 .dock-divider { margin: 0; height: 18px; }
@@ -220,6 +236,9 @@ dialog::backdrop { background: #201e1a55; }
 .select-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .select-trigger svg { color: var(--muted); }
 .select-toolbar .select-trigger,.select-plain .select-trigger { border-color: transparent; box-shadow: none; border-radius: var(--radius-chrome-item); padding: 6px 8px; min-height: 32px; }
+.room-picker .select-toolbar .select-trigger,.header-actions .add-worker { border-radius: var(--radius-pill); }
+.room-picker .select-toolbar .select-trigger { background: transparent; }
+.room-picker .select-toolbar .select-trigger:hover,.room-picker .select-toolbar .select-trigger[aria-expanded=true] { background: #1414140c; }
 .select-toolbar .select-trigger { font-size: 12px; }
 .select-list { position: fixed; inset: auto; margin: 0; padding: var(--menu-padding); border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--paper); color: var(--ink); box-shadow: 0 10px 28px #1414141f; overflow: auto; overscroll-behavior: contain; }
 .select-list:popover-open { display: flex; flex-direction: column; gap: 2px; }
@@ -243,7 +262,7 @@ dialog::backdrop { background: #201e1a55; }
   .workspace-header { grid-template-columns: 1fr auto; }
   .clock { display: none; }
   .workspace-name,.room-picker > .tool-divider { display: none; }
-  .activity-card { width: 240px; bottom: 68px; }
+  .activity-card { width: 240px; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
   .worker-dock { max-width: calc(100% - 24px); }
   .dock-avatars { max-width: 190px; }
   .header-actions { gap: 2px; }
@@ -270,7 +289,10 @@ dialog::backdrop { background: #201e1a55; }
   .add-worker { min-height: 44px; }
   .worker-dock { height: 52px; padding-inline: 10px; gap: 4px; }
   .dock-avatars { max-width: 180px; padding-block: 3px; }
-  .activity-card { bottom: 76px; }
+  .activity-card { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 24px); }
+  .activity-card:not(.expanded) > p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .activity-card > button { min-height: 44px; padding-bottom: 0; }
+  .activity-card:not(.expanded) > p { padding-bottom: 8px; }
   .send-button { width: 36px; min-height: 36px; }
   .composer-bottom > span { max-width: 180px; }
 }

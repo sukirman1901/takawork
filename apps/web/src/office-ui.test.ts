@@ -33,6 +33,21 @@ it('uses a compact horizontal camera rail on phones so worker labels remain visi
 it('keeps the camera rail away from character labels at tablet widths', () => {
   expect(styles).toMatch(/@media \(max-width:1199px\)\s*\{\s*\.camera-rail\s*\{[^}]*flex-direction:\s*row/);
 });
+it('gives only floating chrome a readable glass treatment and pill-shaped top and team groups', () => {
+  expect(styles).toContain('.room-picker.paper,.clock.paper,.header-actions.paper,.camera-rail.paper,.worker-dock.paper,.activity-card.paper');
+  expect(styles).toMatch(/\.room-picker,.clock,.header-actions,.worker-dock\s*\{\s*border-radius:\s*var\(--radius-pill\)/);
+  expect(styles).toContain('backdrop-filter: blur(');
+  expect(styles).toMatch(/\.room-picker \.select-toolbar \.select-trigger,\.header-actions \.add-worker\s*\{\s*border-radius:\s*var\(--radius-pill\)/);
+  expect(styles).toMatch(/\.header-actions \.icon-button,\.worker-dock \.icon-button,\.dock-avatar\s*\{\s*border-radius:\s*var\(--radius-pill\)/);
+  expect(styles).not.toContain('border-color: #ffffffb8;');
+  expect(styles).toContain('.chat-panel { position: absolute;');
+});
+it('compacts the phone activity preview without hiding its expandable content or the team dock', () => {
+  expect(app).toContain("className={`activity-card paper ${activity?'expanded':''}`}");
+  expect(app).toContain('aria-expanded={activity} aria-controls="activity-list"');
+  expect(styles).toMatch(/@media \(max-width:599px\)\s*\{[\s\S]*?\.activity-card:not\(\.expanded\) > p\s*\{[^}]*white-space:\s*nowrap/);
+  expect(styles).toMatch(/\.worker-dock\s*\{[^}]*bottom:\s*calc\(var\(--edge\) \+ env\(safe-area-inset-bottom/);
+});
 it('keeps a labelled add action at tablet widths and uses a phone-only chat sheet',()=>{
   expect(app.includes("(max-width: 599px)")).toBe(true);
   expect(app.includes('aria-pressed={selectedId===w.id}')).toBe(true);

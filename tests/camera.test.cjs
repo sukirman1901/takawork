@@ -5,6 +5,23 @@ const vm = require('node:vm');
 const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../kantor-sim.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+test('overview framing widens on narrow screens without exceeding camera limits or resetting user orbit on resize', () => {
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(functionSource('overviewFraming'), context);
+  const desktop = context.overviewFraming(16 / 9);
+  const phone = context.overviewFraming(320 / 568);
+  assert.equal(desktop.fov, 42);
+  assert.equal(desktop.distance, 1);
+  assert.ok(phone.fov > desktop.fov && phone.fov <= 60);
+  assert.ok(phone.distance > 1 && phone.distance <= 1.28);
+  assert.ok(Number.isFinite(context.overviewFraming(0).fov));
+  assert.match(script, /const compact = dist > 30 && w >= 600/);
+  assert.match(script, /cameraManuallyMoved\s*=\s*true/);
+  assert.match(script, /!cameraManuallyMoved\s*&&\s*activeCameraView\s*===\s*'overview'/);
+  assert.match(functionSource('focusAgent'), /activeCameraView\s*=\s*'focused'/);
+  assert.doesNotMatch(script.match(/window\.addEventListener\('resize',[\s\S]*?\n\s*\}\);/)?.[0] ?? '', /setCameraView\(/);
+});
 function functionSource(name) {
   const start = script.indexOf(`function ${name}(`);
   assert.ok(start >= 0, `${name} is missing`);
