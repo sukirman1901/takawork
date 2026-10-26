@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowUp, Check, ChevronLeft, Maximize2, Minimize2, Plus, Square, X } from 'lucide-react';
-import { capabilityNames, rooms, type Worker } from '../../../packages/contracts/src';
+import { capabilityNames, type Worker } from '../../../packages/contracts/src';
 import { Portrait } from '../../../packages/avatar/src/Portrait';
 import { useWorkspace } from './state';
 import { nearTranscriptEnd, transcriptTarget } from './chat-scroll';
@@ -13,7 +13,7 @@ function Settings({worker}: {worker:Worker}) {
     <span className="eyebrow">Identitas worker</span><label>Nama<input value={name} required maxLength={40} onChange={e=>{setName(e.target.value);setSaved(false);}}/></label><label>Role<input value={role} required maxLength={60} onChange={e=>{setRole(e.target.value);setSaved(false);}}/></label><label>Tanggung jawab<textarea rows={4} required maxLength={1000} value={description} onChange={e=>{setDescription(e.target.value);setSaved(false);}}/></label>
     <div className="id-line"><span>Kode worker</span><code>{worker.code}</code></div><p className="helper">ID internal tidak berubah saat nama diedit. {worker.id}</p>
     <button className="button primary" type="submit">{saved?<><Check size={16}/>Tersimpan</>:'Simpan identitas'}</button>
-    <hr/><Select label="Ruangan" value={worker.roomId??''} onValueChange={value=>{try{assign(worker.id,value||null);setError('');}catch(e){setError(e instanceof Error?e.message:'Penempatan gagal.');}}} options={[...rooms.map(r=>({value:r.id,label:`${r.name} · ${data.workers.filter(w=>w.roomId===r.id).length}/${r.capacity}`,disabled:r.id!==worker.roomId&&data.workers.filter(w=>w.roomId===r.id).length>=r.capacity})),{value:'',label:'Tanpa meja'}]}/>
+    <hr/><Select label="Ruangan" value={worker.roomId??''} onValueChange={value=>{try{assign(worker.id,value||null);setError('');}catch(e){setError(e instanceof Error?e.message:'Penempatan gagal.');}}} options={[...data.rooms.map(r=>({value:r.id,label:`${r.name} · ${data.workers.filter(w=>w.roomId===r.id).length}/${r.capacity}`,disabled:r.id!==worker.roomId&&data.workers.filter(w=>w.roomId===r.id).length>=r.capacity})),{value:'',label:'Tanpa meja'}]}/>
     <span className="eyebrow">Konfigurasi demo</span><p>{worker.capabilities.map(c=>capabilityNames[c]).join(' · ')||'Belum ada kategori kemampuan.'}</p><p className="helper">Hermes belum dikonfigurasi. Tidak ada API key atau izin alat yang disimpan di browser.</p>{error&&<p className="form-error" role="alert">{error}</p>}
   </form>;
 }

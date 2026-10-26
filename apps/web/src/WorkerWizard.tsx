@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, X, ShieldCheck } from 'lucide-react';
-import { presets, rooms, avatarSchema, capabilities, capabilityNames, type AvatarConfig, type WorkerInput } from '../../../packages/contracts/src';
+import { presets, avatarSchema, capabilities, capabilityNames, type AvatarConfig, type WorkerInput } from '../../../packages/contracts/src';
 import { Portrait } from '../../../packages/avatar/src/Portrait';
 import { AvatarPreview } from './AvatarPreview';
 import { useWorkspace } from './state';
@@ -53,7 +53,7 @@ export function WorkerWizard({onClose}: {onClose:()=>void}) {
         {capabilities.map(cap=><label key={cap} className="capability"><input type="checkbox" checked={draft.capabilities.includes(cap)} onChange={e=>setDraft({...draft,capabilities:e.target.checked?[...draft.capabilities,cap]:draft.capabilities.filter(c=>c!==cap)})}/><span><strong>{capabilityNames[cap]}</strong><small>Preferensi tugas · tidak mengaktifkan akses nyata</small></span></label>)}
       </div>}
       {step===3 && <div className="identity-step"><div className="review-person"><Portrait config={draft.avatar} size={72}/><div><h3>{draft.name}</h3><p>{draft.role}</p><span className="badge">ID otomatis · NSA</span></div></div><p className="description">{draft.description}</p>
-        <Select label="Penempatan" value={draft.roomId??''} onValueChange={value=>setDraft({...draft,roomId:value||null})} options={[...rooms.map(r=>{const count=data.workers.filter(w=>w.roomId===r.id).length;return {value:r.id,label:`${r.name} · ${count}/${r.capacity} meja`,disabled:count>=r.capacity};}),{value:'',label:'Tanpa meja dulu'}]}/>
+        <Select label="Penempatan" value={draft.roomId??''} onValueChange={value=>setDraft({...draft,roomId:value||null})} options={[...data.rooms.map(r=>{const count=data.workers.filter(w=>w.roomId===r.id).length;return {value:r.id,label:`${r.name} · ${count}/${r.capacity} meja`,disabled:count>=r.capacity};}),{value:'',label:'Tanpa meja dulu'}]}/>
         <p className="helper">Worker tanpa meja tetap bisa diajak chat dari daftar. Ruangan tidak membatasi jumlah worker.</p>
         <div className="review-line"><span>Runtime</span><strong>Demo lokal · bukan Hermes</strong></div><div className="review-line"><span>Kemampuan demo</span><strong>{draft.capabilities.map(c=>capabilityNames[c]).join(', ')||'Belum dipilih'}</strong></div>
       </div>}

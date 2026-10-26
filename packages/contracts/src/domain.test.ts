@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorker, assignWorker, createConversation, appendMessage, recoverData, initialData, presets, dataSchema } from './index';
+import { createWorker, assignWorker, createConversation, appendMessage, recoverData, initialData, createRoom, renameRoom, deleteRoom, presets, dataSchema, defaultRooms, type WorkspaceData } from './index';
 
 describe('worker identity and capacity', () => {
   it('keeps internal identity separate from display name and allocates unique codes', () => {
@@ -24,6 +24,49 @@ describe('worker identity and capacity', () => {
     const data = initialData();
     expect(() => createWorker(data, { name: ' ', role: 'QA', description: 'x', avatar: presets[0].config, capabilities: [], roomId: null })).toThrow();
     expect(dataSchema.safeParse({ ...data, workers: [{ ...data.workers[0], avatar: { ...presets[0].config, presentation: 'f', hair: 'short' } }] }).success).toBe(false);
+  });
+});
+describe('room management', () => {
+  it('adds rooms with unique ids and guarded names', () => {
+    let data = initialData();
+    data = createRoom(data, 'Lab');
+    expect(data.rooms.map(r => r.name)).toContain('Lab');
+    expect(data.rooms.find(r => r.name === 'Lab')!.capacity).toBe(6);
+    expect(() => createRoom(data, 'lab')).toThrow(/dipakai/i);
+    expect(() => createRoom(data, '  ')).toThrow();
+    expect(() => createRoom(data, 'x'.repeat(25))).toThrow();
+    for (let i = data.rooms.length; i < 8; i++) data = createRoom(data, `Ruangan ${i}`);
+    expect(() => createRoom(data, 'Terlalu banyak')).toThrow(/maksimal/i);
+  });
+  it('renames rooms without breaking worker placement or duplicates', () => {
+    let data = initialData();
+    data = renameRoom(data, 'engineering', 'Rekayasa');
+    expect(data.rooms.find(r => r.id === 'engineering')!.name).toBe('Rekayasa');
+    expect(data.workers[0].roomId).toBe('engineering');
+    data = createRoom(data, 'Lab');
+    expect(() => renameRoom(data, 'lab', 'rekayasa')).toThrow(/dipakai/i);
+    expect(() => renameRoom(data, 'missing', 'Apa')).toThrow(/tidak ditemukan/i);
+  });
+  it('deletes empty rooms, moves occupants, and protects the last room and full destinations', () => {
+    let data = initialData();
+    data = createRoom(data, 'Lab');
+    data = deleteRoom(data, 'lab');
+    expect(data.rooms.map(r => r.id)).toEqual(defaultRooms.map(r => r.id));
+    expect(() => deleteRoom(data, 'lab')).toThrow(/tidak ditemukan/i);
+    data = deleteRoom(data, 'operations');
+    data = deleteRoom(data, 'research');
+    expect(() => deleteRoom(data, 'engineering')).toThrow(/satu ruangan/i);
+    data = createRoom(data, 'Lab');
+    data = deleteRoom(data, 'engineering', 'lab');
+    expect(data.rooms.map(r => r.id)).not.toContain('engineering');
+    expect(data.workers.every(w => w.roomId === 'lab')).toBe(true);
+    expect(() => deleteRoom(data, 'research', 'missing')).toThrow(/tidak ditemukan/i);
+  });
+  it('always surfaces a room list, including for legacy data saved before rooms existed', () => {
+    const legacy: Partial<WorkspaceData> = { version: 1, workers: [], conversations: [], runs: [] };
+    const parsed = dataSchema.parse(legacy);
+    expect(parsed.rooms.map(r => r.name)).toEqual(defaultRooms.map(r => r.name));
+    expect(initialData().rooms).toHaveLength(3);
   });
 });
 describe('conversation and recovery', () => {

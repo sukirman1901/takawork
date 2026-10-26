@@ -38,7 +38,7 @@ it('gives only floating chrome a readable glass treatment and pill-shaped top an
   expect(styles).toMatch(/\.room-picker,.clock,.header-actions,.worker-dock\s*\{\s*border-radius:\s*var\(--radius-pill\)/);
   expect(styles).toContain('backdrop-filter: blur(');
   expect(styles).toMatch(/\.room-picker \.select-toolbar \.select-trigger,\.header-actions \.add-worker\s*\{\s*border-radius:\s*var\(--radius-pill\)/);
-  expect(styles).toMatch(/\.header-actions \.icon-button,\.worker-dock \.icon-button,\.dock-avatar\s*\{\s*border-radius:\s*var\(--radius-pill\)/);
+  expect(styles).toMatch(/\.header-actions \.icon-button,\.worker-dock \.icon-button,\.room-picker \.icon-button,\.dock-avatar\s*\{\s*border-radius:\s*var\(--radius-pill\)/);
   expect(styles).not.toContain('border-color: #ffffffb8;');
   expect(styles).toContain('.chat-panel { position: absolute;');
 });
@@ -53,4 +53,15 @@ it('keeps a labelled add action at tablet widths and uses a phone-only chat shee
   expect(app.includes('aria-pressed={selectedId===w.id}')).toBe(true);
   expect(styles.includes('@media (max-width:599px)')).toBe(true);
   expect(styles.includes('.tool-group')).toBe(true);
+});
+it('exposes room management from the room picker, not from hidden menus', ()=>{
+  expect(app).toContain('aria-label="Kelola ruangan"');
+  expect(app).toContain('RoomManager');
+  expect(app).toContain('data.rooms.map(r=>({value:r.id,label:r.name}))');
+  expect(app).toContain('data.rooms.find(r=>r.id===roomId)??data.rooms[0]');
+});
+it('keeps the kelola dialog opaque and the picker gear pill-shaped', ()=>{
+  expect(styles).toMatch(/\.room-picker \.icon-button/);
+  expect(styles).toMatch(/\.room-dialog\s*\{[^}]*border-radius:\s*var\(--radius-panel\)/);
+  expect(styles).not.toMatch(/\.room-dialog[^{]*\{[^}]*backdrop-filter/);
 });
