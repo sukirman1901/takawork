@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, Camera, Moon, Pause, Play, Plus, RotateCcw, Search, Sun, Users, X } from 'lucide-react';
+import { ArrowUpRight, Camera, Coffee, Moon, Pause, Play, Plus, Presentation, RotateCcw, Search, Sun, Users, X } from 'lucide-react';
 import { rooms, workerActivity } from '../../../packages/contracts/src';
 import { Portrait } from '../../../packages/avatar/src/Portrait';
 import { useWorkspace } from './state';
@@ -28,28 +28,22 @@ export function App() {
   const [view,setView]=useState<CameraView>('overview');
   const [motion,setMotion]=useState(()=>!matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [small,setSmall]=useState(()=>matchMedia('(max-width: 599px)').matches);
-  const cameraMenu=useRef<HTMLDetailsElement>(null);
   useEffect(()=>{
     const screen=matchMedia('(max-width: 599px)'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
     const resize=()=>setSmall(screen.matches),reduce=()=>{if(reduced.matches)setMotion(false);};
     screen.addEventListener('change',resize);reduced.addEventListener('change',reduce);
     return()=>{screen.removeEventListener('change',resize);reduced.removeEventListener('change',reduce);};
   },[]);
-  function camera(next:CameraView){setView(next);setRevision(n=>n+1);if(cameraMenu.current?.open){cameraMenu.current.open=false;cameraMenu.current.querySelector('summary')?.focus();}}
+  function camera(next:CameraView){setView(next);setRevision(n=>n+1);}
   const worker=data.workers.find(w=>w.id===selectedId),room=rooms.find(r=>r.id===roomId)!;
   const occupants=data.workers.filter(w=>w.roomId===roomId);
   const lastActivity=activityPreview(data);
   const covered=!!worker&&(small||full);
   return <div className={`workspace ${worker?'has-chat':''} ${full?'full-chat':''}`}>
     <h1 className="sr-only">Takaloka — workspace AI worker</h1>
-    <header className="workspace-header" inert={covered}><Clock/><div className="header-actions paper">
-      <div className="tool-group" role="group" aria-label="Navigasi kantor">
-      <div className="room-picker"><span className="workspace-name">Takaloka</span><span className="tool-divider"/><Select id="room-select" label="Ruangan aktif" hideLabel variant="toolbar" value={roomId} onValueChange={setRoom} options={rooms.map(r=>({value:r.id,label:r.name}))}/></div>
-      <span className="tool-divider room-divider"/>
-      <div className="camera-presets" aria-label="Sudut pandang"><button aria-pressed={view==='overview'} onClick={()=>camera('overview')}>Ruangan</button><button aria-pressed={view==='whiteboard'} onClick={()=>camera('whiteboard')}>Papan tulis</button><button aria-pressed={view==='lounge'} onClick={()=>camera('lounge')}>Pantry</button></div>
-      <details ref={cameraMenu} className="camera-menu" onKeyDown={e=>{if(e.key==='Escape'&&cameraMenu.current){cameraMenu.current.open=false;cameraMenu.current.querySelector('summary')?.focus();}}}><summary className="icon-button" aria-label="Pilihan kamera" title="Pilihan kamera"><Camera/></summary><div className="camera-options paper"><button onClick={()=>camera('overview')}>Seluruh ruangan</button><button onClick={()=>camera('whiteboard')}>Papan tulis</button><button onClick={()=>camera('lounge')}>Pantry</button><button onClick={()=>camera('overview')}><RotateCcw size={14}/>Reset kamera</button><button className="menu-motion" aria-pressed={!motion} onClick={()=>setMotion(!motion)}>{motion?<Pause size={14}/>:<Play size={14}/>} {motion?'Jeda suasana':'Lanjutkan suasana'}</button></div></details>
-      <button className="icon-button reset-camera" aria-label="Reset kamera" title="Reset kamera" onClick={()=>camera('overview')}><RotateCcw/></button>
-      </div><span className="tool-divider"/>
+    <header className="workspace-header" inert={covered}>
+      <div className="room-picker paper"><span className="workspace-name">Takaloka</span><span className="tool-divider"/><Select id="room-select" label="Ruangan aktif" hideLabel variant="toolbar" value={roomId} onValueChange={setRoom} options={rooms.map(r=>({value:r.id,label:r.name}))}/></div>
+      <Clock/><div className="header-actions paper">
       <div className="tool-group" role="group" aria-label="Tampilan kantor">
       <button className="icon-button" aria-label={night?'Cahaya sore':'Cahaya lembur'} aria-pressed={night} title={night?'Cahaya sore':'Cahaya lembur'} onClick={()=>setNight(!night)}>{night?<Moon/>:<Sun/>}</button>
       <button className="icon-button motion-toggle" aria-label={motion?'Jeda suasana':'Lanjutkan suasana'} aria-pressed={!motion} title={motion?'Jeda suasana':'Lanjutkan suasana'} onClick={()=>setMotion(!motion)}>{motion?<Pause/>:<Play/>}</button>
@@ -59,6 +53,14 @@ export function App() {
     {notice&&<div className="storage-notice" role="alert"><span>{notice}</span><button className="icon-button" aria-label="Tutup pemberitahuan" onClick={dismiss}><X/></button></div>}
     <main className="workspace-body"><section className="office-panel" aria-label={`Kantor ${room.name}`} inert={covered}>
       <div className="office-canvas"><Suspense fallback={<div className="scene-loading" role="status">Menyiapkan kantor…</div>}><Office night={night} motion={motion} suspended={covered||wizard||directory} view={view} revision={revision}/></Suspense></div>
+      <nav className="camera-rail paper" aria-label="Sudut pandang kantor">
+        <button className="icon-button" aria-label="Ruangan" title="Ruangan" aria-pressed={view==='overview'} onClick={()=>camera('overview')}><Camera/></button>
+        <button className="icon-button" aria-label="Papan tulis" title="Papan tulis" aria-pressed={view==='whiteboard'} onClick={()=>camera('whiteboard')}><Presentation/></button>
+        <button className="icon-button" aria-label="Pantry" title="Pantry" aria-pressed={view==='lounge'} onClick={()=>camera('lounge')}><Coffee/></button>
+        <span className="rail-divider" aria-hidden="true"/>
+        <button className="icon-button" aria-label="Reset kamera" title="Reset kamera" onClick={()=>camera('overview')}><RotateCcw/></button>
+        <button className="icon-button rail-motion" aria-label={motion?'Jeda suasana':'Lanjutkan suasana'} aria-pressed={!motion} title={motion?'Jeda suasana':'Lanjutkan suasana'} onClick={()=>setMotion(!motion)}>{motion?<Pause/>:<Play/>}</button>
+      </nav>
       {!occupants.length&&<div className="room-empty paper"><strong>Belum ada worker di {room.name}.</strong><button className="text-button" onClick={()=>setDirectory(true)}>Pilih dari daftar worker →</button></div>}
       <div className={`activity-card paper ${activity?'expanded':''}`}><button onClick={()=>setActivity(!activity)} aria-expanded={activity} aria-controls="activity-list"><strong>Aktivitas</strong><span>{activity?'Tutup':'Buka'}</span></button><p title={lastActivity}>{lastActivity}</p>{activity&&<div id="activity-list"><p className="simulation-note">Gerak, mengetik, dan istirahat adalah suasana visual. Balasan chat masih demo.</p>{data.runs.slice(-8).reverse().map(run=><button key={run.id} className="activity-entry" onClick={()=>{select(run.workerId);useWorkspace.getState().selectConversation(run.conversationId);setActivity(false);}}><span>{data.workers.find(w=>w.id===run.workerId)?.name}</span><p>{run.summary}</p></button>)}</div>}</div>
       <footer className="worker-dock paper"><span className="dock-label">Tim</span><div className="dock-avatars">{occupants.map(w=><button key={w.id} className={`dock-avatar ${selectedId===w.id?'active':''}`} aria-label={`Chat dengan ${w.name}`} aria-pressed={selectedId===w.id} title={`${w.name} · ${workerActivity(data,w.id)}`} onClick={()=>select(w.id)}><Portrait config={w.avatar} size={24}/></button>)}</div><span className="dock-divider"/><button className="icon-button" aria-label="Lihat semua worker" title={`${data.workers.length} worker · termasuk tanpa meja`} onClick={()=>setDirectory(true)}><Users size={16}/></button></footer>
