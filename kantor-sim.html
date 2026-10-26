@@ -961,15 +961,6 @@
     counter.castShadow = true;
     coffeeGroup.add(counter);
 
-    // Italian Espresso Machine with Metallic Chrome
-    const espresso = new THREE.Mesh(
-      new THREE.BoxGeometry(0.85, 0.7, 0.75),
-      new THREE.MeshStandardMaterial({ color: 0xe8b04b, metalness: 0.3, roughness: 0.4 })
-    );
-    espresso.position.set(-0.6, 1.15 + 0.35, 0);
-    espresso.castShadow = true;
-    coffeeGroup.add(espresso);
-
     // Water Cooler with Crystalline Water Tank
     const dispenser = new THREE.Mesh(
       new THREE.CylinderGeometry(0.24, 0.24, 0.75, 18),
