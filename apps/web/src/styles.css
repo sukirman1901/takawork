@@ -239,8 +239,8 @@ dialog::backdrop { background: #201e1a55; }
 .danger-zone { display: flex; flex-direction: column; gap: 6px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: #fafafa; }
 .danger-zone p { font-size: 12px; }
 .confirm-dialog { width: min(420px,calc(100vw - 32px)); border-radius: var(--radius-panel); }
-.confirm-dialog .dialog-footer { border-top: 0; padding-top: 4px; }
-.confirm-dialog .confirm-body { padding: 0 24px; }
+.confirm-dialog .dialog-footer { border-top: 0; background: none; padding: 0 24px 24px; }
+.confirm-dialog .confirm-body { padding: 0 24px 16px; }
 .confirm-body { font-size: 12px; color: var(--ink); }
 
 /* Takaloka-style custom selects. Native popover top layer prevents clipped menus. */
@@ -329,6 +329,8 @@ dialog::backdrop { background: #201e1a55; }
   .steps li > span { width: 16px; height: 16px; font-size: 9px; }
   .wizard-body { padding: 20px 16px; min-height: 310px; }
   .dialog-footer { padding: 14px 16px; }
+  .confirm-dialog .dialog-footer { padding: 0 16px 20px; }
+  .confirm-dialog .confirm-body { padding: 0 16px 14px; }
   .avatar-step { grid-template-columns: 1fr; gap: 16px; }
   .avatar-stage { height: 210px; min-height: 210px; }
   .field-grid { gap: 12px; }
