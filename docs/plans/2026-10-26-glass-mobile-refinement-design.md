@@ -4,7 +4,7 @@ Reading this as: a living office control plane for Takawork users, in restrained
 
 ## Direction
 
-The user's example uses quiet floating glass over a colorful room. Apply subtle neutral translucency, a limited backdrop blur and fine borders only to persistent room controls (room picker, header actions, clock, camera rail, activity and team dock). Opaque chat, menus and dialogs preserve readable text. Contrast and keyboard focus take priority over translucency. Avoid heavy glows and saturated blue/orange copied from the reference; those colors belong to the rendered room and avatars.
+The user's example uses quiet floating glass over a colorful room. Apply subtle neutral translucency, a limited backdrop blur and fine borders only to persistent room controls (room picker, header actions, clock, camera rail, activity and team dock). Make the Takaloka/Engineering group, clock/day pill, Worker/actions group and Tim dock fully pill-shaped, matching the side controls; activity can remain a compact text panel and open menus remain regular panels. Opaque chat, menus and dialogs preserve readable text. Contrast and keyboard focus take priority over translucency. Avoid heavy glows and saturated blue/orange copied from the reference; those colors belong to the rendered room and avatars.
 
 ## Mobile structure
 
