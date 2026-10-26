@@ -72,6 +72,22 @@ it('drops disconnected demo copy while keeping honest per-message labels', ()=>{
   expect(wizard).not.toContain('Hermes belum terhubung');
   expect(wizard).not.toContain('Demo lokal · bukan Hermes');
 });
+it('removes every visible demo copy and keeps a single local-replies note', ()=>{
+  for (const source of [chat, wizard, app]) {
+    expect(source).not.toContain('balasan demo');
+    expect(source).not.toContain('Balasan demo');
+    expect(source).not.toContain('Hentikan demo');
+    expect(source).not.toContain('Riwayat demo');
+    expect(source).not.toContain('Konfigurasi demo');
+    expect(source).not.toContain('Runtime demo');
+    expect(source).not.toContain('Kemampuan demo');
+    expect(source).not.toContain('metadata demo');
+    expect(source).not.toContain('memulai demo');
+    expect(source).not.toContain('<span className="badge">Demo</span>');
+  }
+  expect(chat).toContain('Balasan dibuat lokal di browser, belum oleh Hermes.');
+  expect(chat).toContain('className="badge">Lokal<');
+});
 it('deletes a worker from its settings tab behind an explicit confirmation', ()=>{
   expect(chat).toContain('aria-label="Hapus worker"');
   expect(chat).toContain('Hapus permanen');

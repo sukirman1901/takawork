@@ -14,7 +14,7 @@ export const demoRuntime: WorkerRuntime = {
       const timer = setTimeout(() => {
         signal.removeEventListener('abort', onAbort);
         const text = messages.filter(m => m.role === 'user').at(-1)?.text ?? '';
-        resolve(`Ini balasan demo dari ${worker.name}, bukan hasil Hermes.\n\nPermintaan: “${text.slice(0, 300)}”\n\nSebagai ${worker.role}, alur yang akan saya usulkan:\n1. Perjelas kebutuhan dan hasil yang diharapkan.\n2. Susun langkah kerja serta bahan yang diperlukan.\n3. Tinjau hasil bersama sebelum tindakan berikutnya.\n\nBelum ada file, web, atau alat yang dijalankan. Sambungan Hermes akan ditambahkan setelah kontrak integrasinya diverifikasi.`);
+        resolve(`Ini balasan lokal dari ${worker.name}, bukan hasil Hermes.\n\nPermintaan: “${text.slice(0, 300)}”\n\nSebagai ${worker.role}, alur yang akan saya usulkan:\n1. Perjelas kebutuhan dan hasil yang diharapkan.\n2. Susun langkah kerja serta bahan yang diperlukan.\n3. Tinjau hasil bersama sebelum tindakan berikutnya.\n\nBelum ada file, web, atau alat yang dijalankan. Sambungan Hermes akan ditambahkan setelah kontrak integrasinya diverifikasi.`);
       }, 1400);
       signal.addEventListener('abort', onAbort, { once: true });
     });

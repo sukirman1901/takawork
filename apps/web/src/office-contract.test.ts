@@ -5,8 +5,8 @@ import { projectOffice, sceneMessageSchema, sceneReplySchema } from './office-co
 it('projects real demo job history to the room board without private chat text',()=>{
   const data=initialData();
   data.conversations.push({id:'c',workerId:'demo-budi',title:'PRIVATE',messages:[{id:'m',role:'user',text:'PRIVATE REQUEST',createdAt:'2026-10-25'}]});
-  data.runs.push({id:'r',workerId:'demo-budi',conversationId:'c',status:'running',summary:'Menyiapkan balasan demo',createdAt:'2026-10-25'});
-  expect(projectOffice(data,'engineering').board).toEqual([{id:'r',workerId:'demo-budi',name:'Budi',summary:'Menyiapkan balasan demo',status:'running'}]);
+  data.runs.push({id:'r',workerId:'demo-budi',conversationId:'c',status:'running',summary:'Menyiapkan balasan',createdAt:'2026-10-25'});
+  expect(projectOffice(data,'engineering').board).toEqual([{id:'r',workerId:'demo-budi',name:'Budi',summary:'Menyiapkan balasan',status:'running'}]);
   expect(projectOffice(data,'operations').board).toEqual([]);
   expect(JSON.stringify(projectOffice(data,'engineering'))).not.toContain('PRIVATE');
 });

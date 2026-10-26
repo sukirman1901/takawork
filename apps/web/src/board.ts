@@ -1,7 +1,7 @@
 import type { BoardJob } from './office-contract';
 const statuses:Record<BoardJob['status'],string>={running:'Berlangsung',completed:'Selesai',cancelled:'Dibatalkan',failed:'Terputus'};
 export function boardLines(jobs:BoardJob[]) {
-  return jobs.length?jobs.map(job=>`${job.name} · ${statuses[job.status]} — ${job.summary}`):['Belum ada pekerjaan.','Kirim pesan ke worker untuk memulai demo.'];
+  return jobs.length?jobs.map(job=>`${job.name} · ${statuses[job.status]} — ${job.summary}`):['Belum ada pekerjaan.','Kirim pesan ke worker untuk mulai bekerja.'];
 }
 function fit(ctx:CanvasRenderingContext2D,text:string,width:number) {
   if(ctx.measureText(text).width<=width)return text;

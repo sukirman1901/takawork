@@ -9,9 +9,9 @@ function load(): WorkspaceData {
   try {
     const saved = localStorage.getItem(KEY);
     if (!saved) return initialData();
-    if (saved.length > 8_000_000) throw new Error('Data demo terlalu besar.');
+    if (saved.length > 8_000_000) throw new Error('Data lokal terlalu besar.');
     const data = dataSchema.parse(JSON.parse(saved));
-    if (data.runs.some(r => r.status === 'running')) initialNotice = 'Balasan demo terputus saat halaman ditutup. Pesan tetap tersimpan; kirim ulang bila perlu.';
+    if (data.runs.some(r => r.status === 'running')) initialNotice = 'Balasan terputus saat halaman ditutup. Pesan tetap tersimpan; kirim ulang bila perlu.';
     return recoverData(data);
   } catch {
     writable = false;
@@ -85,24 +85,24 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     const runId = crypto.randomUUID(), controller = new AbortController(), createdAt = new Date().toISOString();
     controllers.set(runId, controller);
     let data = appendMessage(get().data, conversationId, { id: crypto.randomUUID(), role: 'user', text, createdAt });
-    data = { ...data, runs: [...data.runs, { id: runId, workerId: worker.id, conversationId, status: 'running', summary: 'Menyiapkan balasan demo', createdAt }] };
+    data = { ...data, runs: [...data.runs, { id: runId, workerId: worker.id, conversationId, status: 'running', summary: 'Menyiapkan balasan', createdAt }] };
     set({ data }); persist(data);
     try {
       const reply = await demoRuntime.respond(worker, data.conversations.find(c => c.id === conversationId)!.messages, controller.signal);
       // Ignore stale or cancelled completions, even if a future adapter ignores AbortSignal.
       if (get().data.runs.find(r => r.id === runId)?.status !== 'running') return;
       let latest = appendMessage(get().data, conversationId, { id: crypto.randomUUID(), role: 'assistant', text: reply, createdAt: new Date().toISOString() });
-      latest = { ...latest, runs: latest.runs.map(r => r.id === runId ? { ...r, status: 'completed', summary: 'Balasan demo selesai · tidak menjalankan alat' } : r) };
+      latest = { ...latest, runs: latest.runs.map(r => r.id === runId ? { ...r, status: 'completed', summary: 'Balasan selesai · tidak menjalankan alat' } : r) };
       set({ data: latest }); persist(latest);
     } catch (error) {
       if (get().data.runs.find(r => r.id === runId)?.status !== 'running') return;
       const cancelled = error instanceof DOMException && error.name === 'AbortError';
-      const latest: WorkspaceData = { ...get().data, runs: get().data.runs.map(r => r.id === runId ? { ...r, status: cancelled ? 'cancelled' : 'failed', summary: cancelled ? 'Balasan demo dibatalkan' : 'Balasan demo gagal. Pesan tersimpan; silakan kirim ulang.' } : r) };
+      const latest: WorkspaceData = { ...get().data, runs: get().data.runs.map(r => r.id === runId ? { ...r, status: cancelled ? 'cancelled' : 'failed', summary: cancelled ? 'Balasan dibatalkan' : 'Balasan gagal. Pesan tersimpan; silakan kirim ulang.' } : r) };
       set({ data: latest }); persist(latest);
     } finally { controllers.delete(runId); }
   },
   cancel(runId) {
-    const data: WorkspaceData = { ...get().data, runs: get().data.runs.map(r => r.id === runId && r.status === 'running' ? { ...r, status: 'cancelled', summary: 'Balasan demo dibatalkan' } : r) };
+    const data: WorkspaceData = { ...get().data, runs: get().data.runs.map(r => r.id === runId && r.status === 'running' ? { ...r, status: 'cancelled', summary: 'Balasan dibatalkan' } : r) };
     set({ data }); persist(data); controllers.get(runId)?.abort();
   },
 }));

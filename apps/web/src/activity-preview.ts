@@ -1,7 +1,7 @@
 import type { Run, WorkspaceData } from '../../../packages/contracts/src';
 const summaries:Record<Run['status'],string>={
-  running:'Menyiapkan balasan demo',completed:'Balasan demo selesai',
-  cancelled:'Balasan demo dibatalkan',failed:'Balasan demo terputus',
+  running:'Menyiapkan balasan',completed:'Balasan selesai',
+  cancelled:'Balasan dibatalkan',failed:'Balasan terputus',
 };
 export function activityPreview(data:WorkspaceData) {
   const run=data.runs.at(-1);

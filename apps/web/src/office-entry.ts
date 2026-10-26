@@ -12,7 +12,7 @@ try {
     onSelect:workerId=>send({type:'select',workerId}),
     motion:()=>motion,suspended:()=>suspended,
     bubble:ag=>{
-      if(current.find(w=>w.id===ag.data.id)?.busy)return 'Menyiapkan balasan · demo';
+      if(current.find(w=>w.id===ag.data.id)?.busy)return 'Menyiapkan balasan';
       const labels:Record<string,string>={desk:'Di meja',coffee:'Di pantry',lounge:'Istirahat',whiteboard:'Di papan',meeting:'Berkumpul'};
       return `${labels[ag.state]??'Berjalan'} · suasana`;
     },
@@ -26,7 +26,7 @@ try {
     if(nextBoard!==boardIdentity){
       boardIdentity=nextBoard;office.board(canvas=>drawBoard(canvas,message.board));
       let accessible=document.getElementById('worker-jobs');
-      if(!accessible){accessible=document.createElement('section');accessible.id='worker-jobs';accessible.className='sr-only';accessible.setAttribute('aria-label','Pekerjaan worker · demo');document.body.appendChild(accessible);}
+      if(!accessible){accessible=document.createElement('section');accessible.id='worker-jobs';accessible.className='sr-only';accessible.setAttribute('aria-label','Pekerjaan worker');document.body.appendChild(accessible);}
       accessible.replaceChildren(...boardLines(message.board).map(text=>{const p=document.createElement('p');p.textContent=text;return p;}));
       document.body.dataset.jobs=String(message.board.length);
     }
@@ -52,7 +52,7 @@ try {
       const busy=!!current.find(w=>w.id===a.data.id)?.busy;
       a.bubbleEl?.classList.toggle('is-busy',busy);
       if(busy)a.timer=Math.max(a.timer,5);
-      if(a.bubbleEl)a.bubbleEl.lastChild!.textContent=current.find(w=>w.id===a.data.id)?.busy?'Menyiapkan balasan · demo':`${({desk:'Di meja',coffee:'Di pantry',whiteboard:'Di papan'} as Record<string,string>)[a.state]??'Suasana kantor'} · suasana`;
+      if(a.bubbleEl)a.bubbleEl.lastChild!.textContent=current.find(w=>w.id===a.data.id)?.busy?'Menyiapkan balasan':`${({desk:'Di meja',coffee:'Di pantry',whiteboard:'Di papan'} as Record<string,string>)[a.state]??'Suasana kantor'} · suasana`;
     });
     document.body.dataset.workers=String(current.length);
     document.body.dataset.motion=String(motion);

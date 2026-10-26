@@ -137,8 +137,8 @@ export function appendMessage(data: WorkspaceData, conversationId: string, messa
   }) };
 }
 export function recoverData(data: WorkspaceData): WorkspaceData {
-  return { ...data, runs: data.runs.map(r => r.status === 'running' ? { ...r, status: 'failed', summary: 'Demo terputus saat halaman ditutup. Kirim ulang pesan jika diperlukan.' } : r) };
+  return { ...data, runs: data.runs.map(r => r.status === 'running' ? { ...r, status: 'failed', summary: 'Balasan terputus saat halaman ditutup. Kirim ulang pesan jika diperlukan.' } : r) };
 }
 export function workerActivity(data: WorkspaceData, id: string) {
-  return data.runs.some(r => r.workerId === id && r.status === 'running') ? 'Menyiapkan balasan demo' : 'Siap · demo';
+  return data.runs.some(r => r.workerId === id && r.status === 'running') ? 'Menyiapkan balasan' : 'Siap';
 }
