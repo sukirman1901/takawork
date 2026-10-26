@@ -13,8 +13,6 @@ export function drawBoard(canvas:HTMLCanvasElement,jobs:BoardJob[]) {
   ctx.fillStyle='#ffffff';ctx.fillRect(0,0,1024,512);
   ctx.fillStyle='#141414';ctx.font='500 32px "IBM Plex Sans", sans-serif';
   ctx.fillText('Pekerjaan worker',36,48);
-  ctx.fillStyle='#6b6b6b';ctx.font='18px "IBM Plex Sans", sans-serif';
-  ctx.fillText('Demo lokal · Hermes belum terhubung',36,78);
   if(!jobs.length){
     boardLines([]).forEach((line,i)=>{ctx.fillStyle=i?'#6b6b6b':'#141414';ctx.font=`${i?22:28}px "IBM Plex Sans", sans-serif`;ctx.fillText(line,36,160+i*40);});return;
   }

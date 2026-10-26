@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
 import { initialData } from '../../../packages/contracts/src';
 import { activityPreview } from './activity-preview';
-it('labels the office as a demo when there are no runs',()=>{
-  expect(activityPreview(initialData())).toContain('Hermes belum terhubung');
+it('shows a quiet empty activity preview when there are no runs',()=>{
+  expect(activityPreview(initialData())).toBe('Belum ada aktivitas');
 });
 it('keeps the compact summary short while leaving the full run untouched',()=>{
   const data=initialData();
