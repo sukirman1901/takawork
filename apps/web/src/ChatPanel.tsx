@@ -7,14 +7,26 @@ import { nearTranscriptEnd, transcriptTarget } from './chat-scroll';
 import { Select } from './Select';
 
 function Settings({worker}: {worker:Worker}) {
-  const update=useWorkspace(s=>s.updateWorker), assign=useWorkspace(s=>s.assign), data=useWorkspace(s=>s.data);
+  const update=useWorkspace(s=>s.updateWorker), assign=useWorkspace(s=>s.assign), remove=useWorkspace(s=>s.removeWorker), data=useWorkspace(s=>s.data);
   const [name,setName]=useState(worker.name),[role,setRole]=useState(worker.role),[description,setDescription]=useState(worker.description),[error,setError]=useState(''),[saved,setSaved]=useState(false);
+  const confirm=useRef<HTMLDialogElement>(null);
+  const removals=data.conversations.filter(c=>c.workerId===worker.id).length;
   return <form className="settings-form" onSubmit={e=>{e.preventDefault();try{update(worker.id,{name,role,description});setSaved(true);setError('');}catch(e){setError(e instanceof Error?e.message:'Gagal menyimpan.');}}}>
     <span className="eyebrow">Identitas worker</span><label>Nama<input value={name} required maxLength={40} onChange={e=>{setName(e.target.value);setSaved(false);}}/></label><label>Role<input value={role} required maxLength={60} onChange={e=>{setRole(e.target.value);setSaved(false);}}/></label><label>Tanggung jawab<textarea rows={4} required maxLength={1000} value={description} onChange={e=>{setDescription(e.target.value);setSaved(false);}}/></label>
     <div className="id-line"><span>Kode worker</span><code>{worker.code}</code></div><p className="helper">ID internal tidak berubah saat nama diedit. {worker.id}</p>
     <button className="button primary" type="submit">{saved?<><Check size={16}/>Tersimpan</>:'Simpan identitas'}</button>
     <hr/><Select label="Ruangan" value={worker.roomId??''} onValueChange={value=>{try{assign(worker.id,value||null);setError('');}catch(e){setError(e instanceof Error?e.message:'Penempatan gagal.');}}} options={[...data.rooms.map(r=>({value:r.id,label:`${r.name} · ${data.workers.filter(w=>w.roomId===r.id).length}/${r.capacity}`,disabled:r.id!==worker.roomId&&data.workers.filter(w=>w.roomId===r.id).length>=r.capacity})),{value:'',label:'Tanpa meja'}]}/>
     <span className="eyebrow">Konfigurasi demo</span><p>{worker.capabilities.map(c=>capabilityNames[c]).join(' · ')||'Belum ada kategori kemampuan.'}</p><p className="helper">Hermes belum dikonfigurasi. Tidak ada API key atau izin alat yang disimpan di browser.</p>{error&&<p className="form-error" role="alert">{error}</p>}
+    <hr/><div className="danger-zone">
+      <span className="eyebrow">Zona bahaya</span>
+      <p>Hapus {worker.name} secara permanen beserta {removals} percakapan, tugas, dan catatan papan kantor.</p>
+      <button className="button destructive" type="button" aria-label="Hapus worker" onClick={()=>confirm.current?.showModal()}>Hapus worker</button>
+    </div>
+    <dialog ref={confirm} className="confirm-dialog" aria-labelledby="confirm-remove-title">
+      <div className="dialog-heading"><div><span className="eyebrow">Permanen</span><h2 id="confirm-remove-title">Hapus {worker.name}?</h2></div></div>
+      <p className="confirm-body">Worker, {removals} percakapan, tugas, dan riwayat papan kantor terkait akan dihapus dari browser. Tindakan ini tidak bisa dibatalkan.</p>
+      <div className="dialog-footer"><button type="button" className="button" onClick={()=>confirm.current?.close()}>Batal</button><button type="button" className="button destructive" onClick={()=>{confirm.current?.close();remove(worker.id);}}>Hapus permanen</button></div>
+    </dialog>
   </form>;
 }
 export function ChatPanel({worker}: {worker:Worker}) {
@@ -40,7 +52,6 @@ export function ChatPanel({worker}: {worker:Worker}) {
   function submit() {if(!draft.trim()||active)return;const message=draft;setDraft('');void send(message);}
   return <section className={`chat-panel ${full?'is-full':''}`} aria-label={`Ruang kerja ${worker.name}`} onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();close(null);}}}>
     <header className="chat-header"><button className="icon-button mobile-only" aria-label="Kembali ke kantor" title="Kembali ke kantor" onClick={()=>close(null)}><ChevronLeft/></button><Portrait config={worker.avatar} size={36} className="active-portrait"/><div className="chat-identity"><h2>{worker.name}</h2><p>{worker.role} <span>· {worker.code}</span></p></div><button className="icon-button desktop-only" aria-label={full?'Kecilkan chat':'Perbesar chat'} title={full?'Kecilkan chat':'Perbesar chat'} onClick={()=>setFull(!full)}>{full?<Minimize2/>:<Maximize2/>}</button><button className="icon-button desktop-only" aria-label="Tutup chat" title="Tutup chat · Esc" onClick={()=>close(null)}><X/></button></header>
-    <div className="connection-strip"><span className="status-dot demo"/>Demo lokal <span>Hermes belum terhubung</span></div>
     <nav className="panel-tabs" aria-label="Bagian worker">{([['chat','Chat'],['tasks','Tugas'],['settings','Pengaturan']] as const).map(([key,label])=><button key={key} className={tab===key?'active':''} aria-pressed={tab===key} onClick={()=>setTab(key)}>{label}{key==='tasks'&&workerRuns.length>0&&<small>{workerRuns.length}</small>}</button>)}</nav>
     {tab==='chat'&&<>
       <div className="conversation-picker"><Select id="conversation-select" label="Percakapan" hideLabel variant="plain" value={conversationId??''} onValueChange={choose} options={conversations.map(c=>({value:c.id,label:c.title}))}/><button className="icon-button" aria-label="Percakapan baru" title="Percakapan baru" onClick={newChat}><Plus/></button></div>

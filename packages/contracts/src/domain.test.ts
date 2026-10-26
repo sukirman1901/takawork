@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorker, assignWorker, createConversation, appendMessage, recoverData, initialData, createRoom, renameRoom, deleteRoom, presets, dataSchema, defaultRooms, type WorkspaceData } from './index';
+import { createWorker, assignWorker, createConversation, appendMessage, recoverData, initialData, createRoom, renameRoom, deleteRoom, deleteWorker, presets, dataSchema, defaultRooms, type WorkspaceData } from './index';
 
 describe('worker identity and capacity', () => {
   it('keeps internal identity separate from display name and allocates unique codes', () => {
@@ -67,6 +67,24 @@ describe('room management', () => {
     const parsed = dataSchema.parse(legacy);
     expect(parsed.rooms.map(r => r.name)).toEqual(defaultRooms.map(r => r.name));
     expect(initialData().rooms).toHaveLength(3);
+  });
+});
+describe('worker deletion', () => {
+  it('removes only the named worker with its conversations and runs', () => {
+    let data = initialData();
+    const budi = data.workers[0];
+    data = createConversation(data, budi.id);
+    const conversationId = data.conversations.at(-1)!.id;
+    data = appendMessage(data, conversationId, { id: 'm1', role: 'user', text: 'Cek laporan', createdAt: '2026-10-26T00:00:00Z' });
+    data.runs.push({ id: 'run-1', workerId: budi.id, conversationId, status: 'completed', summary: 'Selesai', createdAt: '2026-10-26T00:00:00Z' });
+    expect(() => deleteWorker(data, 'missing')).toThrow(/tidak ditemukan/i);
+    const next = deleteWorker(data, budi.id);
+    expect(next.workers.some(w => w.id === budi.id)).toBe(false);
+    expect(next.conversations.some(c => c.workerId === budi.id)).toBe(false);
+    expect(next.runs.some(r => r.workerId === budi.id)).toBe(false);
+    expect(next.workers).toHaveLength(data.workers.length - 1);
+    expect(next.conversations).toHaveLength(data.conversations.length - 1);
+    expect(next.runs).toHaveLength(data.runs.length - 1);
   });
 });
 describe('conversation and recovery', () => {

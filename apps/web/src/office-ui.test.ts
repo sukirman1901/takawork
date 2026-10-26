@@ -3,6 +3,8 @@ import { expect, it } from 'vitest';
 
 const app = readFileSync(new URL('./App.tsx', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('./styles.css', import.meta.url), 'utf8');
+const chat = readFileSync(new URL('./ChatPanel.tsx', import.meta.url), 'utf8');
+const wizard = readFileSync(new URL('./WorkerWizard.tsx', import.meta.url), 'utf8');
 it('keeps the office full-screen with floating UI rather than dashboard chrome', () => {
   expect(app).not.toContain('className="runtime-footer"');
   expect(app).not.toContain('className="office-caption"');
@@ -64,4 +66,15 @@ it('keeps the kelola dialog opaque and the picker gear pill-shaped', ()=>{
   expect(styles).toMatch(/\.room-picker \.icon-button/);
   expect(styles).toMatch(/\.room-dialog\s*\{[^}]*border-radius:\s*var\(--radius-panel\)/);
   expect(styles).not.toMatch(/\.room-dialog[^{]*\{[^}]*backdrop-filter/);
+});
+it('drops disconnected demo copy while keeping honest per-message labels', ()=>{
+  expect(chat).not.toContain('Hermes belum terhubung');
+  expect(wizard).not.toContain('Hermes belum terhubung');
+  expect(wizard).not.toContain('Demo lokal · bukan Hermes');
+});
+it('deletes a worker from its settings tab behind an explicit confirmation', ()=>{
+  expect(chat).toContain('aria-label="Hapus worker"');
+  expect(chat).toContain('Hapus permanen');
+  expect(chat).toContain('tidak bisa dibatalkan');
+  expect(chat).toContain('removeWorker');
 });

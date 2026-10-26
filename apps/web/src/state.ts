@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { appendMessage, assignWorker, createConversation, createRoom as createRoomDomain, createWorker, dataSchema, deleteRoom as deleteRoomDomain, initialData, renameRoom as renameRoomDomain, recoverData, workerSchema, type WorkerInput, type WorkspaceData } from '../../../packages/contracts/src';
+import { appendMessage, assignWorker, createConversation, createRoom as createRoomDomain, createWorker, dataSchema, deleteRoom as deleteRoomDomain, deleteWorker as deleteWorkerDomain, initialData, renameRoom as renameRoomDomain, recoverData, workerSchema, type WorkerInput, type WorkspaceData } from '../../../packages/contracts/src';
 import { demoRuntime } from '../../../packages/runtime-hermes/src';
 
 const KEY = 'nusaiba.prototype.v1';
@@ -31,6 +31,7 @@ interface WorkspaceState {
   setRoom(id: string): void; selectWorker(id: string | null): void; selectConversation(id: string): void;
   newConversation(): void; addWorker(input: WorkerInput): string; updateWorker(id: string, input: Pick<WorkerInput, 'name' | 'role' | 'description'>): void;
   assign(id: string, roomId: string | null): void; addRoom(name: string): void; renameRoom(id: string, name: string): void; removeRoom(id: string, destination?: string): void;
+  removeWorker(id: string): void;
   send(text: string): Promise<void>; cancel(runId: string): void;
   clearNotice(): void; setFull(value: boolean): void;
 }
@@ -70,6 +71,11 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     const data = deleteRoomDomain(get().data, id, destination);
     const fallback = data.rooms.some(r => r.id === get().roomId) ? get().roomId : data.rooms[0].id;
     set({ data, roomId: fallback }); persist(data);
+  },
+  removeWorker(id) {
+    const data = deleteWorkerDomain(get().data, id);
+    const cleared = get().selectedWorkerId === id;
+    set({ data, ...(cleared ? { selectedWorkerId: null, selectedConversationId: null, fullChat: false } : {}) }); persist(data);
   },
   async send(text) {
     text = text.trim(); if (!text || text.length > 12000) return;

@@ -72,8 +72,7 @@ export function createWorker(data: WorkspaceData, input: WorkerInput): Workspace
   const worker = workerSchema.parse({ ...input, id: crypto.randomUUID(), code: `NSA-${String(highest + 1).padStart(3, '0')}`, connection: 'demo' });
   return { ...data, workers: [...data.workers, worker] };
 }
-export function assignWorker(data: WorkspaceData, id: string, roomId: string | null): WorkspaceData {
-  if (!data.workers.some(w => w.id === id)) throw new Error('Worker tidak ditemukan.');
+export function assignWorker(data: WorkspaceData, id: string, roomId: string | null): WorkspaceData {  if (!data.workers.some(w => w.id === id)) throw new Error('Worker tidak ditemukan.');
   checkRoom(data, roomId, id);
   return { ...data, workers: data.workers.map(w => w.id === id ? { ...w, roomId } : w) };
 }
@@ -115,6 +114,14 @@ export function deleteRoom(data: WorkspaceData, roomId: string, destinationId?: 
   const rooms = data.rooms.filter(r => r.id !== roomId);
   const remapped = destinationId === undefined ? data : { ...data, workers: data.workers.map(w => w.roomId === roomId ? { ...w, roomId: destinationId } : w) };
   return roomData(remapped, rooms);
+}
+export function deleteWorker(data: WorkspaceData, id: string): WorkspaceData {
+  if (!data.workers.some(w => w.id === id)) throw new Error('Worker tidak ditemukan.');
+  return { ...data,
+    workers: data.workers.filter(w => w.id !== id),
+    conversations: data.conversations.filter(c => c.workerId !== id),
+    runs: data.runs.filter(r => r.workerId !== id),
+  };
 }
 export function createConversation(data: WorkspaceData, workerId: string): WorkspaceData {
   if (!data.workers.some(w => w.id === workerId)) throw new Error('Worker tidak ditemukan.');
